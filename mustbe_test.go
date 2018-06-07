@@ -58,3 +58,16 @@ func ExampleOKOr() {
 	// Output: good error
 	// Catched bad error
 }
+
+func ExampleCatchedAs() {
+	foo := func() (err error) {
+		defer mustbe.CatchedAs(&err)
+
+		mustbe.OK(errors.New("sample error"))
+		return nil
+	}
+
+	err := foo()
+	fmt.Println("Returned", err)
+	// Output: Returned sample error
+}

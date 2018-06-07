@@ -12,6 +12,9 @@ func OK(err error) {
 	}
 }
 
+// Thrown is the synonym of OK
+func Thrown(err error) { OK(err) }
+
 // OKVal throws panic if err != nil, oterwise returns val
 func OKVal(val interface{}, err error) interface{} {
 	if err != nil {
@@ -40,6 +43,18 @@ func Catched(cfun func(error)) {
 		// none
 	} else if eb, ok := pnc.(errorBag); ok {
 		cfun(eb.error)
+	} else {
+		panic(pnc)
+	}
+}
+
+// CatchedAs catches mustbe.* error and assigns it to the targetError.
+// It is useful if we just need to return catched error from function.
+func CatchedAs(targetError *error) {
+	if pnc := recover(); pnc == nil {
+		// none
+	} else if eb, ok := pnc.(errorBag); ok {
+		*targetError = eb.error
 	} else {
 		panic(pnc)
 	}
