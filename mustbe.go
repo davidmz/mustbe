@@ -3,12 +3,18 @@
 // mustbe.Catched function handle these (and only these) panics.
 package mustbe
 
-type errorBag struct{ error }
+// ErrorBag is a wrapper around the error value. All OK*/Thrown functions
+// are panics with the ErrorBag value. This type is useful for manual panic
+// recovering.
+type ErrorBag struct{ error }
+
+// Unwrap returns a error wrapped by ErrorBag.
+func (e ErrorBag) Unwrap() error { return e.error }
 
 // OK throws panic if err != nil
 func OK(err error) {
 	if err != nil {
-		panic(errorBag{err})
+		panic(ErrorBag{err})
 	}
 }
 
@@ -18,7 +24,7 @@ func Thrown(err error) { OK(err) }
 // OKVal throws panic if err != nil, oterwise returns val
 func OKVal(val interface{}, err error) interface{} {
 	if err != nil {
-		panic(errorBag{err})
+		panic(ErrorBag{err})
 	}
 	return val
 }
@@ -33,7 +39,7 @@ func OKOr(err error, errs ...error) error {
 			return err
 		}
 	}
-	panic(errorBag{err})
+	panic(ErrorBag{err})
 }
 
 // Catched is a function for defer'ed use (see OK example).
@@ -41,7 +47,7 @@ func OKOr(err error, errs ...error) error {
 func Catched(cfun func(error)) {
 	if pnc := recover(); pnc == nil {
 		// none
-	} else if eb, ok := pnc.(errorBag); ok {
+	} else if eb, ok := pnc.(ErrorBag); ok {
 		cfun(eb.error)
 	} else {
 		panic(pnc)
@@ -53,7 +59,7 @@ func Catched(cfun func(error)) {
 func CatchedAs(targetError *error) {
 	if pnc := recover(); pnc == nil {
 		// none
-	} else if eb, ok := pnc.(errorBag); ok {
+	} else if eb, ok := pnc.(ErrorBag); ok {
 		*targetError = eb.error
 	} else {
 		panic(pnc)

@@ -71,3 +71,15 @@ func ExampleCatchedAs() {
 	fmt.Println("Returned", err)
 	// Output: Returned sample error
 }
+
+func ExampleErrorBag() {
+	defer func() {
+		if pnc := recover(); pnc != nil {
+			if errBag, ok := pnc.(mustbe.ErrorBag); ok {
+				fmt.Println("Wrapped error:", errBag.Unwrap())
+			}
+		}
+	}()
+	mustbe.Thrown(errors.New("sample error"))
+	// Output: Wrapped error: sample error
+}
