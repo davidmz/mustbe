@@ -83,3 +83,19 @@ func ExampleErrorBag() {
 	mustbe.Thrown(errors.New("sample error"))
 	// Output: Wrapped error: sample error
 }
+
+func ExampleTrue() {
+	defer mustbe.Catched(func(err error) {
+		fmt.Println("Catched:", err)
+	})
+
+	n := 42
+	mustbe.True(n == 42, errors.New("not a 42"))
+	fmt.Println("Equality to 42 was verified")
+
+	mustbe.True(n == 43, errors.New("not a 43"))
+	fmt.Println("Equality to 43 was verified")
+
+	// Output: Equality to 42 was verified
+	// Catched: not a 43
+}

@@ -65,3 +65,10 @@ func CatchedAs(targetError *error) {
 		panic(pnc)
 	}
 }
+
+// True throws panic if test is not true.
+func True(test bool, err error) {
+	if !test {
+		Thrown(err)
+	}
+}
