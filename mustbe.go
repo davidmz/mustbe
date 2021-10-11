@@ -3,6 +3,11 @@
 // mustbe.Catched function handle these (and only these) panics.
 package mustbe
 
+import (
+	"errors"
+	"fmt"
+)
+
 // ErrorBag is a wrapper around the error value. All OK*/Thrown functions
 // are panics with the ErrorBag value. This type is useful for manual panic
 // recovering.
@@ -29,13 +34,27 @@ func OKVal(val interface{}, err error) interface{} {
 	return val
 }
 
-// OKOr throws panic if err not nil and not in errs, oterwise returns err
+// OKOr throws panic if err not nil and not any of errs, oterwise returns err.
+// Deprecated: It is recommended to use mustbe.OKOrIs instead.
 func OKOr(err error, errs ...error) error {
 	if err == nil {
 		return nil
 	}
 	for _, e := range errs {
 		if e == err {
+			return err
+		}
+	}
+	panic(ErrorBag{err})
+}
+
+// OKOrIs throws panic if err not nil and not "Is" (as in errors.Is) any of errs, oterwise returns err
+func OKOrIs(err error, errs ...error) error {
+	if err == nil {
+		return nil
+	}
+	for _, e := range errs {
+		if errors.Is(err, e) {
 			return err
 		}
 	}
@@ -61,6 +80,19 @@ func CatchedAs(targetError *error) {
 		// none
 	} else if eb, ok := pnc.(ErrorBag); ok {
 		*targetError = eb.error
+	} else {
+		panic(pnc)
+	}
+}
+
+// CatchedAs catches mustbe.* error, wraps it using the `fmt.Errorf(format,
+// err)` and assigns the result to the targetError. The format string must
+// contain a `%w` placeholder for proper fmt.Errorf work.
+func CatchedAsAnnotated(targetError *error, format string) {
+	if pnc := recover(); pnc == nil {
+		// none
+	} else if eb, ok := pnc.(ErrorBag); ok {
+		*targetError = fmt.Errorf(format, eb.error)
 	} else {
 		panic(pnc)
 	}

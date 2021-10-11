@@ -59,6 +59,32 @@ func ExampleOKOr() {
 	// Catched bad error
 }
 
+func ExampleOKOrIs() {
+	defer mustbe.Catched(func(err error) {
+		fmt.Println("Catched", err)
+	})
+
+	var (
+		err            error
+		goodErr        = errors.New("good error")
+		wrappedGoodErr = fmt.Errorf("wrapped %w", goodErr)
+		badErr         = errors.New("bad error")
+	)
+
+	err = goodErr
+	fmt.Println(mustbe.OKOrIs(err, goodErr))
+
+	err = wrappedGoodErr
+	fmt.Println(mustbe.OKOrIs(err, goodErr))
+
+	err = badErr
+	fmt.Println(mustbe.OKOrIs(err, goodErr))
+
+	// Output: good error
+	// wrapped good error
+	// Catched bad error
+}
+
 func ExampleCatchedAs() {
 	foo := func() (err error) {
 		defer mustbe.CatchedAs(&err)
@@ -70,6 +96,19 @@ func ExampleCatchedAs() {
 	err := foo()
 	fmt.Println("Returned", err)
 	// Output: Returned sample error
+}
+
+func ExampleCatchedAsAnnotated() {
+	foo := func() (err error) {
+		defer mustbe.CatchedAsAnnotated(&err, "wrapped %w")
+
+		mustbe.OK(errors.New("sample error"))
+		return nil
+	}
+
+	err := foo()
+	fmt.Println("Returned", err)
+	// Output: Returned wrapped sample error
 }
 
 func ExampleErrorBag() {
